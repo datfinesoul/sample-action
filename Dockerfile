@@ -6,7 +6,9 @@ COPY entrypoint.sh /entrypoint.sh
 
 RUN apk add \
   jq \
-  curl
+  curl \
+  git \
+  bash
 
 # Code file to execute when the docker container starts up (`entrypoint.sh`)
 ENTRYPOINT ["/entrypoint.sh"]
