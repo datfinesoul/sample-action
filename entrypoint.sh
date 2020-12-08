@@ -27,6 +27,7 @@ EOF
 }
 
 # load the sumolgic config into environment variables
+# shellcheck source=/dev/null
 source <( \
   echo "${INPUT_SUMOLOGIC_CONFIG}" | \
   jq -r 'to_entries | .[] | "export " + .key + "=\"" + .value + "\""' \
@@ -45,14 +46,14 @@ else
   fi
 fi
 
-for FILE in $(find . -type f -name orders -maxdepth 2); do
+while IFS= read -r -d '' FILE; do
   unset SERVICE ECR_REPO GIT_REPO GIT_BRANCH TYPE REPOSITORY
   # service is based on directory name
-  SERVICE="$(basename $(dirname $FILE))"
+  SERVICE="$(basename "$(dirname "$FILE")")"
 
   # parse out the deploy commands we support
   IFS=$' \t' read -r TYPE REPOSITORY <<< \
-    "$(grep -e "^\(auto\|docker\)deploy\s" $FILE | tail -n1)"
+    "$(grep -e "^\(auto\|docker\)deploy\s" "$FILE" | tail -n1)"
 
   if [[ "${TYPE}" == "dockerdeploy" ]]; then
     # eg. github/glg/epi-screamer/gds-migration:latest
@@ -91,7 +92,7 @@ for FILE in $(find . -type f -name orders -maxdepth 2); do
   create_insert_heredoc /tmp/payload
 
   # NOTE: hardcoded for now, but likely going into a secret as well
-  TABLE_ID="0000000000F6A3B4"
+  TABLE_ID="0000000000F88117"
   curl \
     -XPUT \
     --header 'Content-Type: application/json' \
@@ -104,4 +105,4 @@ for FILE in $(find . -type f -name orders -maxdepth 2); do
     "${SUMOLOGIC_API_ENDPOINT}/v1/lookupTables/${TABLE_ID}/row" \
     || true
 
-done
+done < <(find . -type f -name orders -maxdepth 2 -print0)
