@@ -16,14 +16,18 @@ source <( \
   jq -r 'to_entries | .[] | "export " + .key + "=\"" + .value + "\""' \
   )
 
-if [[ -n "${INPUT_CLUSTER:-}" ]]; then
-  # override if provided via the action
-  CLUSTER="${INPUT_CLUSTER}"
-elif [[ "${GITHUB_REPOSITORY}" =~ [^/]+\/gds.clusterconfig.(.*) ]]; then
+if [[ "${GITHUB_REPOSITORY}" =~ [^/]+\/gds.clusterconfig.(.*) ]]; then
   # otherwise it has to match the gds clusterconfig repo name syntax
   CLUSTER="${BASH_REMATCH[1]}"
+else
+  # override if provided via the action
+  CLUSTER="${INPUT_CLUSTER}"
+  if [[ -z "${CLUSTER}" ]]; then
+    echo "Your repository must be named gds.clusterconfig.* or you have to" \
+      "provide the 'cluster' github action parameter"
+    exit 1
+  fi
 fi
-
 
 for FILE in $(find . -type f -name orders -maxdepth 2); do
   unset SERVICE ECR_REPO GIT_REPO GIT_BRANCH TYPE REPOSITORY
