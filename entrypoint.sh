@@ -10,6 +10,22 @@ set -o pipefail;
 
 IFS=$'\n\t'
 
+function create_insert_heredoc () {
+  local OUTPUT_FILE="$1"
+  cat > "${OUTPUT_FILE}" << EOF
+{
+  "row": [
+    { "columnName": "cluster", "columnValue": "${CLUSTER}" },
+    { "columnName": "service", "columnValue": "${SERVICE}" },
+    { "columnName": "ecr_repo", "columnValue": "${ECR_REPO}" },
+    { "columnName": "ecr_tag", "columnValue": "${ECR_TAG}" },
+    { "columnName": "git_repo", "columnValue": "${GIT_REPO}" },
+    { "columnName": "git_branch", "columnValue": "${GIT_BRANCH}" }
+  ]
+}
+EOF
+}
+
 # load the sumolgic config into environment variables
 source <( \
   echo "${INPUT_SUMOLOGIC_CONFIG}" | \
@@ -71,6 +87,8 @@ for FILE in $(find . -type f -name orders -maxdepth 2); do
     echo "error: ${CLUSTER}/${FILE}: unable to extract GIT_REPO"
     continue
   fi
+
+  create_insert_heredoc /tmp/payload
 
   # NOTE: hardcoded for now, but likely going into a secret as well
   TABLE_ID="0000000000F6A3B4"
