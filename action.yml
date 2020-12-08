@@ -1,19 +1,17 @@
 # action.yml
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'GDS Sumologic Cluster Config Uploader '
+description: 'Link GDS related service repositories to the cluster in Sumo Logic'
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
+  cluster:
+    description: 'eg. p01, i01, etc.'
     required: true
-    default: 'World'
+    default: ''
   sumologic_config:
     description: 'JSON with Sumo Logic API config'
     required: true
-outputs:
-  time: # id of output
-    description: 'The time we greeted you'
+#outputs:
+#  time: # id of output
+#    description: 'The time we greeted you'
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  args:
-    - ${{ inputs.who-to-greet }}
